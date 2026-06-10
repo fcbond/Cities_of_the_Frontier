@@ -5,6 +5,11 @@
 Iron is a stored resource used alongside gold to construct most buildings. Your
 current supply is shown in the kingdom status.
 
+When starting a new campaign, you can choose whether to use the iron resource
+system. **Use Iron (new)** enables the mechanics described below. If you choose
+**Just Gold (classic)**, buildings require only gold, mines are unavailable,
+and hills do not produce iron.
+
 ### Building mines
 
 1. Move a **Peasant Workers** unit onto an ordinary mountain hex.
