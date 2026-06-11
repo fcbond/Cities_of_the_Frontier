@@ -1,4 +1,24 @@
 --[[
+Cities of the Frontier — Lua utilities
+
+Provides three custom WML actions needed because the standard Wesnoth engine
+tags lack equivalent functionality:
+
+  [save_map]   variable=VAR
+      Serialises the entire map (including borders) into a WML variable as a
+      map-data string.  Used by STORE_MAP_AND_UNITS to persist the map between
+      scenarios without writing a save file.
+
+  [load_map]   variable=VAR
+      Deserialises a previously stored map string and calls replace_map, which
+      also handles shrinking/expanding the playable area.  Used by
+      RESTORE_MAP_AND_UNITS at the start of each new scenario.
+
+  [store_shroud]  side=N  variable=VAR
+  [set_shroud]    side=N  shroud_data=VAR
+      Store and restore a side's shroud bitmap so that explored fog-of-war
+      state carries over correctly across scenario boundaries.
+
 These code snippets are modified versions of code by silene and melinath on the
 Wesnoth forums.  I do not know Lua, so several features of this campaign would
 not have been possible without the helpful posts of these fine individuals!

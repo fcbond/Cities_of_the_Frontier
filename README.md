@@ -7,3 +7,16 @@ The code was forked from a copy of the Wild Frontiers campaign being maintained 
 This release updates the campaign's Lua integration and add-on metadata for the Wesnoth 1.18 series.
 
 See the [User Guide](USER_GUIDE.md) for campaign mechanics, including how to produce iron.
+
+## Testing
+
+Run the automated checks after making changes:
+
+```sh
+make test
+```
+
+The test runner preprocesses the complete campaign for Easy, Normal, and Hard
+using the installed Wesnoth executable. It also checks the default difficulty,
+animal AI unit IDs, worker-project regressions, and whitespace in changed
+lines. Set `WESNOTH=/path/to/wesnoth-1.18` if the executable is not on `PATH`.
