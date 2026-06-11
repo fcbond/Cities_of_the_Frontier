@@ -94,6 +94,37 @@ assert_not_contains utils/enemies.cfg 'Great Spider' \
 	"obsolete Great Spider unit id is present"
 pass "animal AI unit ids"
 
+serpent_event=$(
+	awk '
+		/\[event\]/ {
+			event = $0 ORS
+			in_event = 1
+			next
+		}
+		in_event {
+			event = event $0 ORS
+			if (/\[\/event\]/) {
+				if (event ~ /type=Water Serpent/) {
+					printf "%s", event
+					exit
+				}
+				in_event = 0
+				event = ""
+			}
+		}
+	' scenarios/a_new_beginning.cfg
+)
+if [[ -z "$serpent_event" ]] ||
+	! grep -Eq '\[filter_second\]' <<<"$serpent_event" ||
+	! grep -Eq 'side=1' <<<"$serpent_event"; then
+	fail "merfolk rescue is not restricted to a side 1 serpent killer"
+fi
+pass "merfolk rescue killer filter"
+
+assert_contains units/Envoy.cfg '\{AMLA_DEFAULT\}' \
+	"Envoy does not have a standard AMLA advancement"
+pass "Envoy AMLA"
+
 assert_contains utils/projects.cfg 'id=cotf_working_state' \
 	"worker projects do not install the persistent working object"
 assert_contains utils/workers.cfg 'object_id=cotf_working_state' \
