@@ -20,15 +20,15 @@ Version 0.6.0
 -[fixed] The outlaws now (usually) burn down villages.  This used to work but was broken sometime around version 0.2.
 -Removed some debug messages I accidentally left in 0.5.1
 -Many new possible magical artifacts, some existing ones tweaked a bit.  The most powerful artifacts still have drawbacks, but all are useful.
--A number of major balance changes, mostly aimed at making all-out expansion a riskier tactic.  
+-A number of major balance changes, mostly aimed at making all-out expansion a riskier tactic.
 	-Farms are back to producing 1 gold/turn in Autumn (still 2/turn in Summer)
 	-Farms are now much more expensive (45 gold)
 	-Map generation tweaks: you are less likely to find one gigantic field to build on
 	-Animals now actively attack your town in the winter
 	-Probably a bunch of other minor stuff I forgot to write down
-	
+
 The balance is still not quite where I want it to be (the game is relatively easy once you make it through the first winter), but it's much better than it was.
-	
+
 Note: doesn't work on BfW 1.11.7 due to a map generator bug.  Upgrade to 1.11.8+
 
 
@@ -63,7 +63,7 @@ Version 0.4.0
 Version 0.3.1
 -Fixed bugs giving you gold if sides other than you defeated orc leaders
 -Fixed bug in which the divert stream action having the text and cost of laying a road.
--Reduced the turns required to divert a stream from 4 to 2 and to build a bridge from 4 to 3. 
+-Reduced the turns required to divert a stream from 4 to 2 and to build a bridge from 4 to 3.
 
 Version 0.3.0
 -Significant overhaul to both the construction "engine" and tutorial WML. You probably don't care about this, but please report any new bugs you might find.
@@ -76,7 +76,7 @@ Version 0.3.0
 
 Version 0.2.0
 -Random map generation. This seems to *usually* give a reasonable map, but everyone once in a while you might get one that's nearly un-winnable.
--Reduced the cost of both the Bowyer and the Stables to 40 and reduced build-times. Please post if you find building these useful. 
+-Reduced the cost of both the Bowyer and the Stables to 40 and reduced build-times. Please post if you find building these useful.
 -Eliminated random spawning of Blood Bats and Dread Bats. Until I have a chance make (or steal :-) some new low-level animal units, this means relatively more wolves.
 -Reduced the equilibrium number of animals a bit. This should make early exploring a bit more possible, and outlaw attacks slightly more predictable.
 -Slightly reduced the size of the outlaw bands

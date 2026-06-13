@@ -50,6 +50,19 @@ assert_not_contains() {
 	fi
 }
 
+assert_count() {
+	local file=$1
+	local pattern=$2
+	local expected=$3
+	local description=$4
+	local actual
+
+	actual=$(grep -Ec "$pattern" "$file" || true)
+	if [[ "$actual" -ne "$expected" ]]; then
+		fail "$description (expected $expected, found $actual)"
+	fi
+}
+
 cd "$ROOT"
 
 version=$("$WESNOTH" --version 2>/dev/null | head -n 1)
@@ -136,6 +149,195 @@ assert_not_contains utils/workers.cfg '\{SCROLL_TO \$proj_list' \
 assert_not_contains utils/workers.cfg '\[floating_text\]' \
 	"project queue floating text has returned"
 pass "worker project regression checks"
+
+assert_contains _main.cfg 'utils/iron\.cfg' \
+	"the centralized iron module is not included"
+assert_not_contains utils/general_macros.cfg '#define (CHECK_IRON|PAY_IRON|GAIN_IRON|SET_PROJECT_COST_TEXT|LOW_IRON)' \
+	"iron economy macros have leaked back into general_macros.cfg"
+
+assert_contains utils/iron.cfg '#define IRON_ENABLED' \
+	"iron-enabled condition is missing"
+assert_contains utils/iron.cfg 'VARIABLE_CONDITIONAL iron_enabled not_equals no' \
+	"iron-enabled compatibility condition changed"
+assert_contains utils/iron.cfg '#define IRON_DISABLED' \
+	"iron-disabled condition is missing"
+assert_contains utils/iron.cfg 'VARIABLE_CONDITIONAL iron_enabled equals no' \
+	"gold-only condition changed"
+assert_contains utils/iron.cfg '#define IRON_EXPLICITLY_ENABLED' \
+	"explicit iron selection condition is missing"
+assert_contains utils/iron.cfg 'VARIABLE_CONDITIONAL iron_enabled equals yes' \
+	"kingdom-status iron condition changed"
+assert_contains utils/iron.cfg 'greater_than_equal_to=\{AMOUNT\}' \
+	"iron affordability check changed"
+assert_contains utils/iron.cfg 'VARIABLE_OP playerIron sub \{AMOUNT\}' \
+	"iron payment behavior changed"
+assert_contains utils/iron.cfg 'VARIABLE_OP playerIron add \{AMOUNT\}' \
+	"iron gain behavior changed"
+assert_contains utils/game_parameters.cfg '#define IRON_WARNING_THRESHOLD' \
+	"low-iron warning threshold is missing"
+assert_contains utils/iron.cfg 'playerIron less_than \{IRON_WARNING_THRESHOLD\}' \
+	"iron spending does not use the low-iron warning threshold"
+assert_contains utils/iron.cfg 'playerIron greater_than_equal_to \{IRON_WARNING_THRESHOLD\}' \
+	"iron gains do not re-arm the low-iron warning at the threshold"
+assert_contains utils/iron.cfg '\{CLEAR_VARIABLE warnings\.low_iron\}' \
+	"low-iron warning is not re-armed after reserves recover"
+assert_contains utils/iron.cfg '#define IRON_WARNINGS' \
+	"low-iron warning event is missing"
+assert_contains utils/iron.cfg 'name=low_iron' \
+	"low-iron warning event name changed"
+assert_contains utils/iron.cfg 'first_time_only=no' \
+	"low-iron warning cannot fire again after recovery"
+assert_contains utils/iron.cfg 'VARIABLE_CONDITIONAL warnings\.low_iron not_equals yes' \
+	"low-iron warning does not suppress repeats"
+assert_contains utils/iron.cfg '\{VARIABLE warnings\.low_iron yes\}' \
+	"low-iron warning does not record that it fired"
+assert_contains utils/iron.cfg 'armorer=_"\{ARMORER_COST\} gold, \{ARMORER_IRON\} iron"' \
+	"iron-mode project cost text changed"
+assert_contains utils/iron.cfg 'armorer=_"\{ARMORER_COST\} gold"' \
+	"gold-only project cost text changed"
+
+for scenario in \
+	scenarios/spring_of_raindrops.cfg \
+	scenarios/summer_of_dreams.cfg \
+	scenarios/autumn_of_gold.cfg \
+	scenarios/winter_of_storms.cfg; do
+	assert_count "$scenario" '\{PRODUCE_MINE_IRON\}' 1 \
+		"$scenario does not use exactly one shared seasonal mine-production routine"
+	assert_not_contains "$scenario" 'list_of_mines' \
+		"$scenario contains a duplicate seasonal mine-production implementation"
+done
+
+assert_count utils/iron.cfg '\{GAIN_IRON 3\}' 1 \
+	"Dwarvish Miner seasonal bonus changed"
+assert_count utils/iron.cfg '\{GAIN_IRON 1\}' 1 \
+	"peasant seasonal bonus changed"
+assert_count utils/iron.cfg '\{GAIN_IRON 2\}' 1 \
+	"base seasonal mine production changed"
+assert_contains utils/iron.cfg 'type=CotF Dwarvish Miner' \
+	"Dwarvish Miner staffing filter changed"
+assert_contains utils/iron.cfg \
+	'type=Peasant,Peasant Workers,Peasant_no_Advance,Peasant_to_Bowman,Peasant_to_Spearman' \
+	"peasant staffing filter changed"
+
+for scenario in scenarios/*.cfg; do
+	assert_count "$scenario" '\{IRON_WARNINGS\}' 1 \
+		"$scenario does not install exactly one low-iron warning handler"
+done
+
+assert_contains scenarios/a_new_beginning.cfg \
+	'focused on modifying the terrain and managing resources' \
+	"tutorial introduction is not appropriate to both economy modes"
+assert_count scenarios/a_new_beginning.cfg \
+	'\{TUTORIAL workers_recruit1 ' 2 \
+	"worker tutorial does not provide separate classic and iron variants"
+assert_contains scenarios/a_new_beginning.cfg \
+	'\{IRON_DISABLED\}' \
+	"worker tutorial is not selected by economy mode"
+assert_contains scenarios/a_new_beginning.cfg \
+	'build iron mines in the mountains' \
+	"iron-mode worker tutorial does not explain mine construction"
+assert_contains scenarios/a_new_beginning.cfg \
+	'Farms generate \$farm_income\.spring gold per turn in spring, \$farm_income\.summer in summer, \$farm_income\.autumn in autumn, and \$farm_income\.winter in winter' \
+	"first-farm tutorial does not use the configured seasonal income"
+assert_contains scenarios/summer_of_dreams.cfg \
+	'farms generate \$farm_income\.summer gold per turn' \
+	"summer tutorial does not use the configured farm income"
+assert_not_contains scenarios/a_new_beginning.cfg \
+	'a number over each Workers unit will indicate' \
+	"forge tutorial describes the removed floating countdown"
+assert_contains scenarios/a_new_beginning.cfg \
+	"select 'Project status\\.\\.\\.'" \
+	"forge tutorial does not describe the current project-status menu"
+pass "setting-aware tutorial checks"
+
+assert_contains utils/game_parameters.cfg '#define GOLD_WARNING_THRESHOLD' \
+	"low-gold warning threshold is missing"
+assert_contains utils/general_macros.cfg \
+	'side1_gold less_than \{GOLD_WARNING_THRESHOLD\}' \
+	"low-gold checks do not use the configured threshold"
+assert_contains utils/general_macros.cfg \
+	'side1_gold greater_than_equal_to \{GOLD_WARNING_THRESHOLD\}' \
+	"low-gold warning is not re-armed after recovery"
+assert_contains utils/general_macros.cfg \
+	'VARIABLE_CONDITIONAL warnings\.low_gold not_equals yes' \
+	"low-gold warning does not suppress repeats"
+assert_contains utils/general_macros.cfg \
+	'\{VARIABLE warnings\.low_gold yes\}' \
+	"low-gold warning does not record that it fired"
+assert_contains utils/general_macros.cfg \
+	'\{CLEAR_VARIABLE warnings\.low_gold\}' \
+	"low-gold warning recovery does not clear its suppression flag"
+pass "low-gold warning lifecycle"
+
+assert_contains utils/game_parameters.cfg '#define DIPLOMACY_REMINDER_LIMIT' \
+	"completed-diplomacy reminder limit is missing"
+assert_contains utils/general_macros.cfg \
+	'\{VARIABLE diplomacy_completed_reminders 0\}' \
+	"completed-diplomacy reminder count is not reset each season"
+assert_contains utils/diplomacy.cfg \
+	'diplomacy_completed_reminders less_than \{DIPLOMACY_REMINDER_LIMIT\}' \
+	"completed-diplomacy reminders are not capped"
+assert_contains utils/diplomacy.cfg \
+	'\{VARIABLE_OP diplomacy_completed_reminders add 1\}' \
+	"completed-diplomacy reminders do not increment their seasonal count"
+assert_count utils/diplomacy.cfg \
+	'we have already finished our diplomacy in this direction' 1 \
+	"completed-diplomacy reminder text is duplicated"
+pass "diplomacy reminder limit"
+
+assert_contains scenarios/winter_of_storms.cfg \
+	'Snow-covered terrain greatly restricts where your workers can construct buildings or alter the landscape' \
+	"winter tutorial incorrectly describes worker availability"
+assert_not_contains scenarios/winter_of_storms.cfg \
+	'prevent your workers from constructing new buildings or altering the landscape' \
+	"obsolete all-work-is-prevented winter guidance remains"
+assert_contains utils/workers.cfg \
+	'\$proj_list\[\$i_this\]\.turns work-shifts left' \
+	"project status does not use the campaign's work-shift terminology"
+assert_not_contains utils/workers.cfg 'sixth-days left of work' \
+	"obsolete project-duration terminology remains"
+assert_contains utils/workers.cfg 'recover the materials' \
+	"project cancellation does not accurately describe its full refund"
+assert_not_contains utils/workers.cfg 'recover most of the materials' \
+	"project cancellation still claims only a partial refund"
+pass "message accuracy regression checks"
+
+assert_contains utils/diplomacy.cfg \
+	'VARIABLE_CONDITIONAL warnings\.heretic_trespass not_equals yes' \
+	"heretic trespass protest is not protected against repetition"
+assert_contains utils/diplomacy.cfg \
+	'\{VARIABLE warnings\.heretic_trespass yes\}' \
+	"heretic trespass protest does not record that it was shown"
+assert_contains utils/relics.cfg \
+	'VARIABLE_CONDITIONAL relics\[\{INDEX\}\]\.leader_warned not_equals yes' \
+	"leader relic warning is not protected against repetition"
+assert_contains utils/relics.cfg \
+	'\{VARIABLE relics\[\{INDEX\}\]\.leader_warned yes\}' \
+	"leader relic warning does not record that it was shown"
+pass "repeated dialogue suppression"
+
+for feature_file in \
+	scenarios/a_new_beginning.cfg \
+	utils/build_menus.cfg \
+	utils/diplomacy.cfg \
+	utils/projects.cfg; do
+	if [[ "$feature_file" == "scenarios/a_new_beginning.cfg" ]]; then
+		assert_not_contains "$feature_file" 'VARIABLE_CONDITIONAL iron_enabled' \
+			"$feature_file bypasses the centralized iron conditions"
+	else
+		assert_not_contains "$feature_file" 'iron_enabled' \
+			"$feature_file bypasses the centralized iron conditions"
+	fi
+done
+pass "optional iron economy regression checks"
+
+crlf_files=$(git grep -Il $'\r' -- . || true)
+if [[ -n "$crlf_files" ]]; then
+	echo "Tracked text files contain CRLF or mixed line endings:" >&2
+	printf '%s\n' "$crlf_files" >&2
+	fail "tracked text uses LF line endings"
+fi
+pass "tracked text uses LF line endings"
 
 whitespace_errors=$(
 	{
