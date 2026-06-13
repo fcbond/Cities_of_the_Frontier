@@ -107,32 +107,27 @@ assert_not_contains utils/enemies.cfg 'Great Spider' \
 	"obsolete Great Spider unit id is present"
 pass "animal AI unit ids"
 
-serpent_event=$(
-	awk '
-		/\[event\]/ {
-			event = $0 ORS
-			in_event = 1
-			next
-		}
-		in_event {
-			event = event $0 ORS
-			if (/\[\/event\]/) {
-				if (event ~ /type=Water Serpent/) {
-					printf "%s", event
-					exit
-				}
-				in_event = 0
-				event = ""
-			}
-		}
-	' scenarios/a_new_beginning.cfg
-)
-if [[ -z "$serpent_event" ]] ||
-	! grep -Eq '\[filter_second\]' <<<"$serpent_event" ||
-	! grep -Eq 'side=1' <<<"$serpent_event"; then
-	fail "merfolk rescue is not restricted to a side 1 serpent killer"
-fi
-pass "merfolk rescue killer filter"
+assert_contains _main.cfg 'utils/merfolk\.cfg' \
+	"shared merfolk rescue module is not included"
+assert_contains utils/merfolk.cfg '\[filter_second\]' \
+	"merfolk rescue has no killer filter"
+assert_contains utils/merfolk.cfg 'side=1' \
+	"merfolk rescue is not restricted to a side 1 serpent killer"
+assert_contains utils/merfolk.cfg 'name=merfolk_rescued' \
+	"merfolk rescue does not persist its completion state"
+assert_contains utils/merfolk.cfg '\{VARIABLE merfolk_rescued yes\}' \
+	"merfolk rescue does not record completion"
+assert_contains scenarios/a_new_beginning.cfg '\{MERFOLK_RESCUE\}' \
+	"initial spring does not enable the merfolk rescue"
+assert_contains scenarios/spring_of_raindrops.cfg '\{MERFOLK_RESCUE\}' \
+	"later springs do not enable the merfolk rescue"
+assert_contains scenarios/summer_of_dreams.cfg '\{MERFOLK_RESCUE\}' \
+	"summers do not enable the merfolk rescue"
+assert_not_contains scenarios/autumn_of_gold.cfg '\{MERFOLK_RESCUE\}' \
+	"autumn incorrectly enables the merfolk rescue"
+assert_not_contains scenarios/winter_of_storms.cfg '\{MERFOLK_RESCUE\}' \
+	"winter incorrectly enables the merfolk rescue"
+pass "seasonal merfolk rescue"
 
 assert_contains units/Envoy.cfg '\{AMLA_DEFAULT\}' \
 	"Envoy does not have a standard AMLA advancement"
@@ -258,6 +253,12 @@ assert_contains utils/general_macros.cfg \
 assert_contains utils/general_macros.cfg \
 	'side1_gold greater_than_equal_to \{GOLD_WARNING_THRESHOLD\}' \
 	"low-gold warning is not re-armed after recovery"
+low_gold_warnings="$(
+	sed -n '/^#define LOW_GOLD_WARNINGS$/,/^#enddef$/p' utils/general_macros.cfg
+)"
+if grep -q 'name=side 1 turn' <<<"$low_gold_warnings"; then
+	fail "low-gold warning polls the treasury every turn"
+fi
 assert_contains utils/general_macros.cfg \
 	'VARIABLE_CONDITIONAL warnings\.low_gold not_equals yes' \
 	"low-gold warning does not suppress repeats"
@@ -267,6 +268,12 @@ assert_contains utils/general_macros.cfg \
 assert_contains utils/general_macros.cfg \
 	'\{CLEAR_VARIABLE warnings\.low_gold\}' \
 	"low-gold warning recovery does not clear its suppression flag"
+assert_contains utils/general_macros.cfg \
+	'\{REARM_LOW_GOLD_WARNING\}' \
+	"gold refunds do not re-arm the low-gold warning"
+assert_contains utils/diplomacy.cfg \
+	'\{REARM_LOW_GOLD_WARNING\}' \
+	"the heretic bribe does not re-arm the low-gold warning"
 pass "low-gold warning lifecycle"
 
 assert_contains utils/game_parameters.cfg '#define DIPLOMACY_REMINDER_LIMIT' \
