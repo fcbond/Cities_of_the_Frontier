@@ -117,6 +117,19 @@ assert_contains utils/merfolk.cfg 'name=merfolk_rescued' \
 	"merfolk rescue does not persist its completion state"
 assert_contains utils/merfolk.cfg '\{VARIABLE merfolk_rescued yes\}' \
 	"merfolk rescue does not record completion"
+if ! awk '
+	/^[[:space:]]*\[event\][[:space:]]*$/ {
+		event_depth++
+	}
+	/^[[:space:]]*\[set_menu_item\][[:space:]]*$/ && event_depth == 0 {
+		exit 1
+	}
+	/^[[:space:]]*\[\/event\][[:space:]]*$/ {
+		event_depth--
+	}
+' utils/merfolk.cfg; then
+	fail "merfolk village menu is registered at scenario top level"
+fi
 assert_contains scenarios/a_new_beginning.cfg '\{MERFOLK_RESCUE\}' \
 	"initial spring does not enable the merfolk rescue"
 assert_contains scenarios/spring_of_raindrops.cfg '\{MERFOLK_RESCUE\}' \
