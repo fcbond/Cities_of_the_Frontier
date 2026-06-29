@@ -12,6 +12,8 @@ lint:
 	@echo "--- wmllint ---"
 	@if command -v wmllint >/dev/null 2>&1; then \
 		wmllint /usr/share/games/wesnoth/1.18/data .; \
+	elif [ -x /usr/share/games/wesnoth/1.18/data/tools/wmllint ]; then \
+		/usr/share/games/wesnoth/1.18/data/tools/wmllint --dryrun . 2>&1 | grep -v "DeprecationWarning" | grep -v "passed as positional"; \
 	else \
 		echo "wmllint not found — install wesnoth-1.18-tools to enable"; \
 	fi
