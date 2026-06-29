@@ -199,9 +199,9 @@ assert_contains utils/iron.cfg 'VARIABLE_CONDITIONAL warnings\.low_iron not_equa
 	"low-iron warning does not suppress repeats"
 assert_contains utils/iron.cfg '\{VARIABLE warnings\.low_iron yes\}' \
 	"low-iron warning does not record that it fired"
-assert_contains utils/iron.cfg 'armorer=_"\{ARMORER_COST\} gold, \{ARMORER_IRON\} iron"' \
+assert_contains utils/iron.cfg 'armorer="\{ARMORER_COST\} gold, \{ARMORER_IRON\} iron"' \
 	"iron-mode project cost text changed"
-assert_contains utils/iron.cfg 'armorer=_"\{ARMORER_COST\} gold"' \
+assert_contains utils/iron.cfg 'armorer="\{ARMORER_COST\} gold"' \
 	"gold-only project cost text changed"
 
 for scenario in \
