@@ -78,7 +78,7 @@ Some other calamity ideas:
 7. "Activation" of magical relic that spawns creatures: mud crawlers, fire guardians
 
 no possible calamity first summer
-	
+
 
 side list:
 1 - you
@@ -98,6 +98,5 @@ animals_and_undead
 outlaws (also elves)
 orcs
 calamity
-
 
 
