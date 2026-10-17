@@ -349,6 +349,20 @@ assert_contains utils/relics.cfg \
 assert_contains utils/relics.cfg \
 	'\{VARIABLE relics\[\{INDEX\}\]\.leader_warned yes\}' \
 	"leader relic warning does not record that it was shown"
+assert_count utils/relics.cfg '\{VALUE1 type "[a-z_]+_(cursed|haunted)"\}' 6 \
+	"relic pool should hold six cursed items"
+for relic in sword_of_flame_haunted axe_of_ice_haunted; do
+	assert_count utils/relics.cfg "\"$relic\"" 4 \
+		"$relic is not placed, pooled, imaged and carried over between seasons"
+done
+assert_contains utils/relics.cfg 'id=undead_curse_spawn' \
+	"several undead-raising relics would register duplicate spawn events"
+assert_contains utils/general_macros.cfg 'curse_count_\{CURSE\} add 1' \
+	"a second cursed relic overwrites the first instead of stacking"
+assert_contains utils/relics.cfg 'times=\$curse_count' \
+	"undead spawns do not scale with the number of undead-raising relics"
+assert_contains utils/relics.cfg '\{VARIABLE warnings\.feisty_weapon yes\}' \
+	"cursed weapons do not warn the first time they sting"
 pass "repeated dialogue suppression"
 
 for feature_file in \
