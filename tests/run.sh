@@ -140,6 +140,10 @@ assert_not_contains scenarios/autumn_of_gold.cfg '\{MERFOLK_RESCUE\}' \
 	"autumn incorrectly enables the merfolk rescue"
 assert_not_contains scenarios/winter_of_storms.cfg '\{MERFOLK_RESCUE\}' \
 	"winter incorrectly enables the merfolk rescue"
+assert_contains utils/merfolk.cfg '\{TUTORIAL merfolk_village' \
+	"merfolk rescue does not explain how to rebuild a village"
+assert_contains utils/merfolk.cfg '\[capture_village\]' \
+	"rebuilt merfolk villages are left unowned"
 pass "seasonal merfolk rescue"
 
 assert_contains units/Envoy.cfg '\{AMLA_DEFAULT\}' \
