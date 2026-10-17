@@ -144,6 +144,19 @@ assert_contains utils/merfolk.cfg '\{TUTORIAL merfolk_village' \
 	"merfolk rescue does not explain how to rebuild a village"
 assert_contains utils/merfolk.cfg '\[capture_village\]' \
 	"rebuilt merfolk villages are left unowned"
+for scenario in a_new_beginning spring_of_raindrops summer_of_dreams \
+	autumn_of_gold winter_of_storms; do
+	assert_contains "scenarios/$scenario.cfg" '\{MERFOLK_ALLIANCE\}' \
+		"$scenario does not count deeds towards merfolk recruits"
+done
+assert_contains utils/merfolk.cfg 'role=saurian_leader' \
+	"killing the saurian leader does not earn merfolk recruits"
+assert_contains utils/merfolk.cfg '\[allied_with\]' \
+	"allied kills of the saurian leader do not count for the merfolk"
+assert_contains utils/merfolk.cfg 'merfolk_rescued equals yes' \
+	"merfolk recruits do not require the rescue"
+assert_contains utils/merfolk.cfg 'ALLOW_RECRUIT \(Merman Fighter,Merman Hunter\)' \
+	"merfolk alliance does not unlock merfolk recruits"
 pass "seasonal merfolk rescue"
 
 assert_contains units/Envoy.cfg '\{AMLA_DEFAULT\}' \
