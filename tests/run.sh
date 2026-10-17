@@ -156,7 +156,22 @@ assert_not_contains utils/workers.cfg '\{SCROLL_TO \$proj_list' \
 	"project queue scroll animation has returned"
 assert_not_contains utils/workers.cfg '\[floating_text\]' \
 	"project queue floating text has returned"
+assert_contains utils/workers.cfg 'moves=\$this_unit\.max_moves' \
+	"workers finishing on turn 1 keep the locked state's 0 moves"
 pass "worker project regression checks"
+
+map_width=$(sed -n '/^#define MAP_WIDTH$/{n;s/#enddef//;p}' utils/game_parameters.cfg)
+if ((map_width % 2)); then
+	fail "MAP_WIDTH is odd; the map generator rounds it up, leaving a column unstored"
+fi
+assert_contains utils/general_macros.cfg \
+	'attacks_left \$unit_store\[\$i\]\.max_attacks' \
+	"restored units do not get their own number of attacks"
+assert_contains utils/general_macros.cfg 'ability=curing' \
+	"poisoned units next to a curer stay poisoned across seasons"
+assert_contains utils/general_macros.cfg 'terrain=\*\^V\*' \
+	"poisoned units on villages stay poisoned across seasons"
+pass "season carryover checks"
 
 assert_contains _main.cfg 'utils/iron\.cfg' \
 	"the centralized iron module is not included"
